@@ -104,6 +104,8 @@ if(@$_GET['st'] == "login_sukses"){
 <?php
 $logout = @$_REQUEST['do'] == "logout";
 if($logout){
+     $user=@$_SESSION['rzlab_uname'];
+     $query_up = $con->query("UPDATE tbl_users SET $status_login='0'  WHERE username='$user'") or die(mysqli_error());
      session_destroy();
      unset($_SESSION['rzlab_level']);
      unset($_SESSION['rzlab_id']);
