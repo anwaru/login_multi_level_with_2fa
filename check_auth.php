@@ -24,6 +24,13 @@ $con = new mysqli('localhost', 'root', '', 'demo_login2fa');
 if($con->connect_errno > 0) {
 	die('Could not connect: ' . connect_error());
 }
+$user = @$_SESSION['rzlab_uname'];
+  $sqli_query = $con->query("SELECT * FROM tbl_users WHERE username='$user' AND auth_2fa='$fa'");
+  $sqli_row=$sqli_query->fetch_array();
+  $sqli_count = $sqli_query->num_rows;  
+  $mail = @$_SESSION['rzlab_mail'];
+  $msg = "Dear, ".$user."Your 2FA code is".$sqli_row['auth_2fa']." Date Send: ". date('Y-m-d h:i:s');
+mail($mail,"2FA for RZlab Project",$msg);
 ?>
 <html>
 <head>
@@ -122,7 +129,7 @@ $do = @$_REQUEST['do'] == "check";
 $gate =@$_REQUEST['act'] == "2fa";
 $status =@$_REQUEST['st'] == "true";
 $fa = @$_POST['2fa'];
-$user = @$_SESSION['rzlab_uname'];
+$date = date('Y-m-d h:i:s');
 if($do){
   if($fa == ''){
     echo "<script>window.location='?st=2fa_code_empty'</script>";
@@ -130,7 +137,6 @@ if($do){
   $sqli_query = $con->query("SELECT * FROM tbl_users WHERE username='$user' AND auth_2fa='$fa'");
   $sqli_row=$sqli_query->fetch_array();
   $sqli_count = $sqli_query->num_rows; 
-  echo $sqli_count;
   if($sqli_count == "0"){
     echo "<script>window.location='?st=2fa_not_match'</script>";
   }elseif($sqli_count == "1"){
@@ -138,13 +144,13 @@ if($do){
       @$_SESSION['rzlab_token'] = $sqli_row['auth_token'];
       @$_SESSION['rzlab_level'] = $sqli_row['auth_level'];
       @$_SESSION['rzlab_uid'] = $sqli_row['uid'];
-      $query_up = $con->query("UPDATE tbl_users SET auth_2fa='0' WHERE username='$user'") or die(mysqli_error());
+      $query_up = $con->query("UPDATE tbl_users SET auth_2fa='0', last_login='$date', $status_login='1'  WHERE username='$user'") or die(mysqli_error());
       echo "<script>window.location='./admin_dashboard.php?st=login_sukses'</script>"; 
     }elseif($sqli_row['auth_level'] == "member"){
       @$_SESSION['rzlab_token'] = $sqli_row['auth_token'];
       @$_SESSION['rzlab_level'] = $sqli_row['auth_level'];  
       @$_SESSION['rzlab_uid'] = $sqli_row['uid']; 
-      $query_up = $con->query("UPDATE tbl_users SET auth_2fa='0' WHERE username='$user'") or die(mysqli_error());
+      $query_up = $con->query("UPDATE tbl_users SET auth_2fa='0', last_login='$date', $status_login='1'  WHERE username='$user'") or die(mysqli_error());
       echo "<script>window.location='./member_dashboard.php?st=login_sukses'</script>";
     }
    }
